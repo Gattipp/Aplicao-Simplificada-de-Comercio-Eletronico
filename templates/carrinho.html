@@ -1,56 +1,149 @@
-{% extends "index.html" %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Meu Carrinho - Loja Online</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">Loja Online</a>
+            <div class="navbar-nav ms-auto">
+                {% if session.cliente_id %}
+                    <a class="nav-link" href="/carrinho">Carrinho</a>
+                    <a class="nav-link" href="/perfil">Perfil</a>
+                    <a class="nav-link" href="/logout">Sair</a>
+                {% else %}
+                    <a class="nav-link" href="/login">Login</a>
+                    <a class="nav-link" href="/registrar">Cadastrar</a>
+                    <a class="nav-link" href="/carrinho">Carrinho</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
 
-{% block title %}Meu Carrinho{% endblock %}
-
-{% block content %}
-    <h2>🛒 Seu Carrinho de Compras</h2>
-    
-    {% if itens %}
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>Produto</th>
-                    <th>Preço Unitário</th>
-                    <th>Quantidade</th>
-                    <th>Subtotal</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in itens %}
-                <tr>
-                    <td>
-                        {{ item.produto.nome }}
-                        <a href="{{ url_for('remover_do_carrinho', produto_id=item.produto.id) }}" class="btn btn-sm btn-outline-danger ms-3">
-                            Remover
-                        </a>
-                    </td>
-                    
-                    <td>R$ {{ "%.2f"|format(item.produto.preco) }}</td>
-                    
-                    <td>{{ item.qtd }}</td>
-                    
-                    <td>R$ {{ "%.2f"|format(item.subtotal) }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="container mt-4">
         
-        <div class="text-end mt-4">
-            <h4>Total do Carrinho: R$ {{ "%.2f"|format(total) }}</h4>
-            <a href="{{ url_for('checkout') }}" class="btn btn-success btn-lg mt-3">Finalizar Pedido</a>
-        </div>
-    {% else %}
-        <div class="text-center my-5 p-5 border rounded bg-light shadow-sm">
-            <h3 class="text-danger mb-4">
-                <i class="fas fa-exclamation-circle me-2"></i> Ops! Seu carrinho está vazio!
-            </h3>
-            <p class="text-muted mb-4">
-                Parece que você ainda não adicionou nenhum item. Vamos às compras?
-            </p>
-            <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg">
-                Ver Produtos
-            </a>
-        </div>
-    {% endif %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} mt-3">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
-{% endblock %}
+        <h2>🛒 Seu Carrinho de Compras</h2>
+    
+        {% if itens %}
+            <table class="table table-hover mt-4">
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Preço Unitário</th>
+                        <th style="width: 15%;">Quantidade</th>
+                        <th>Subtotal</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in itens %}
+                    <tr>
+                        <td>
+                            {{ item.produto.nome }}
+                        </td>
+                        <td>R$ {{ "%.2f"|format(item.produto.preco) }}</td>
+                        
+                        <!-- Formulário de Atualização de Quantidade SEM botão de submit -->
+                        <td>
+                            <form id="update-form-{{ item.produto.id }}" action="{{ url_for('atualizar_quantidade', produto_id=item.produto.id) }}" method="POST">
+                                <input type="number" 
+                                       name="quantidade" 
+                                       value="{{ item.qtd }}" 
+                                       min="0" 
+                                       max="{{ item.produto.estoque }}" 
+                                       class="form-control form-control-sm item-quantity-input" 
+                                       data-product-id="{{ item.produto.id }}"
+                                       style="width: 70px;">
+                                <!-- O campo de input 'type=number' é a única coisa necessária -->
+                            </form>
+                        </td>
+                        
+                        <td>R$ {{ "%.2f"|format(item.subtotal) }}</td>
+                        
+                        <td>
+                            <a href="{{ url_for('remover_do_carrinho', produto_id=item.produto.id) }}" class="btn btn-sm btn-outline-danger">
+                                Remover
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <div class="text-end mt-4">
+                <h4>Total do Carrinho: R$ {{ "%.2f"|format(total) }}</h4>
+                
+                <div class="mt-3 d-flex justify-content-end">
+                    <!-- BOTÃO CONTINUAR COMPRANDO -->
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-primary btn-lg me-2">
+                        ← Continuar Comprando
+                    </a>
+                    <a href="{{ url_for('checkout') }}" class="btn btn-success btn-lg">
+                        Finalizar Pedido
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            <!-- CONTEÚDO DO CARRINHO VAZIO -->
+            <div class="text-center my-5 p-5 border rounded bg-light shadow-sm">
+                <h3 class="text-danger mb-4">
+                    <i class="fas fa-exclamation-circle me-2"></i> Ops! Seu carrinho está vazio!
+                </h3>
+                <p class="text-muted mb-4">
+                    Parece que você ainda não adicionou nenhum item. Vamos às compras?
+                </p>
+                <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg">
+                    Ver Produtos
+                </a>
+            </div>
+        {% endif %}
+
+    </div>
+
+    <!-- SCRIPT PARA ATUALIZAÇÃO AUTOMÁTICA -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let timeout = null;
+            
+            // Adiciona um listener a todos os inputs de quantidade
+            document.querySelectorAll('.item-quantity-input').forEach(function(input) {
+                input.addEventListener('change', function() {
+                    const formId = `update-form-${this.getAttribute('data-product-id')}`;
+                    const form = document.getElementById(formId);
+
+                    // Verifica se a quantidade é válida antes de enviar
+                    if (parseInt(this.value) >= 0 && parseInt(this.value) <= parseInt(this.max)) {
+                        
+                        // Limpa o timeout anterior, se houver, para evitar envios duplicados
+                        if (timeout) {
+                            clearTimeout(timeout);
+                        }
+
+                        // Define um novo timeout para enviar o formulário após 500ms
+                        timeout = setTimeout(function() {
+                            form.submit();
+                        }, 500); // 500ms é um bom tempo para dar chance ao usuário de terminar de digitar
+                    } else {
+                         // Se o valor for inválido, o navegador deve impedir, mas esta é uma segurança extra
+                         alert(`A quantidade deve ser entre 0 e ${this.max}.`);
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>
