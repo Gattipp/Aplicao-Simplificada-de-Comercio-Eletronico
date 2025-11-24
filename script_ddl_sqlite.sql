@@ -7,12 +7,14 @@ CREATE TABLE IF NOT EXISTS clientes (
     data_cadastro DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+
 CREATE TABLE IF NOT EXISTS produtos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nome TEXT NOT NULL,
     descricao TEXT,
     preco REAL NOT NULL,
-    estoque INTEGER NOT NULL
+    estoque INTEGER NOT NULL,
+    imagem_url TEXT
 );
 
 CREATE TABLE IF NOT EXISTS pedidos (
