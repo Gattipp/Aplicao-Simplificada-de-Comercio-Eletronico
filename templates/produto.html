@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ produto.nome }} - Loja Online</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">Loja Online</a>
+            <div class="navbar-nav ms-auto">
+                {% if session.cliente_id %}
+                    <span class="navbar-text me-3">Olá, {{ session.cliente_nome }}!</span>
+                    <a class="nav-link" href="/carrinho">Carrinho</a>
+                    <a class="nav-link" href="/perfil">Perfil</a>
+                    <a class="nav-link" href="/logout">Sair</a>
+                {% else %}
+                    <a class="nav-link" href="/login">Login</a>
+                    <a class="nav-link" href="/registrar">Cadastrar</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="row">
+            <div class="col-md-6">
+                <img src="{{ produto['imagem_url'] or '/static/images/notebook-gamer.jpg' }}" 
+                     class="img-fluid rounded" 
+                     alt="{{ produto['nome'] }}"
+                     style="max-height: 400px; object-fit: cover;">
+            </div>
+            <div class="col-md-6">
+                <h1>{{ produto['nome'] }}</h1>
+                <p class="text-muted">Modelo: LOQ 15IAX9E</p>
+                
+                <!-- Preços e desconto -->
+                <div class="mb-3">
+                    <span class="text-decoration-line-through text-muted fs-5">De: R$ 4.199,00</span>
+                    <span class="badge bg-success fs-6 ms-2">10% OFF</span>
+                </div>
+                
+                <h3 class="text-primary mb-3">R$ 3.590,10</h3>
+                <p class="text-success"><strong>à vista no Pix (10% de desconto)</strong></p>
+                
+                <div class="mt-4">
+                    <p><strong>Descrição:</strong><br>
+                    Notebook Gamer Lenovo LOQ E Core i5-12450HX, 8GB, 512GB SSD, RTX 3050 6GB, 15.6" 144Hz, Linux 83MES00100</p>
+                    
+                    {% if produto['estoque'] > 0 %}
+                    <form method="POST" action="/adicionar_carrinho/{{ produto['id'] }}" class="mt-4">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label for="quantidade" class="form-label">Quantidade:</label>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="quantidade" 
+                                       name="quantidade" 
+                                       value="1" 
+                                       min="1" 
+                                       max="{{ produto['estoque'] }}">
+                            </div>
+                            <div class="col-md-8 d-flex align-items-end">
+                                <button type="submit" class="btn btn-success btn-lg w-100">
+                                    🛒 Adicionar ao Carrinho
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    {% else %}
+                    <div class="alert alert-warning mt-4">
+                        Produto esgotado!
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Especificações Técnicas -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="mb-0">📋 Especificações Técnicas</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <table class="table table-striped">
+                                    <tbody>
+                                        <tr>
+                                            <th scope="row" style="width: 40%">Marca</th>
+                                            <td>Lenovo</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">Modelo</th>
+                                            <td>LOQ 15IAX9E</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">Tamanho da Tela</th>
+                                            <td>15.6"</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">Processador</th>
+                                            <td>Intel Core i5-12450HX</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">Velocidade da CPU</th>
+                                            <td>4.4 GHz</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <table class="table table-striped">
+                                    <tbody>
+                                        <tr>
+                                            <th scope="row" style="width: 40%">Memória RAM</th>
+                                            <td>8 GB</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">Armazenamento</th>
+                                            <td>512 GB SSD</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">Placa de Vídeo</th>
+                                            <td>NVIDIA GeForce RTX 3050 6GB (Dedicada)</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">Taxa de Atualização</th>
+                                            <td>144 Hz</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">Sistema Operacional</th>
+                                            <td>Linux</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Características Adicionais -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">🚀 Características do Produto</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">✅ Placa de vídeo dedicada NVIDIA GeForce RTX 3050 com 6GB GDDR6</li>
+                            <li class="list-group-item">✅ Tela Full HD 15.6" com taxa de atualização de 144Hz</li>
+                            <li class="list-group-item">✅ Processador Intel Core i5-12450HX de 12ª geração</li>
+                            <li class="list-group-item">✅ 8GB RAM DDR5 (expansível)</li>
+                            <li class="list-group-item">✅ Armazenamento SSD NVMe de 512GB</li>
+                            <li class="list-group-item">✅ Teclado retroiluminado</li>
+                            <li class="list-group-item">✅ Sistema de refrigeração avançado para gaming</li>
+                            <li class="list-group-item">✅ Portas: USB-C, USB 3.2, HDMI, Ethernet</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <a href="/produtos" class="btn btn-outline-secondary">← Voltar aos Produtos</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from functools import wraps
-from auth import criar_cliente, autenticar_cliente, buscar_cliente_por_id, get_db_connection, buscar_produtos_em_destaque,init_db, bcrypt
+from auth import criar_cliente, autenticar_cliente, buscar_itens_carrinho, buscar_cliente_por_id, get_db_connection, buscar_produtos_em_destaque,init_db, bcrypt
 
 app = Flask(__name__)
 app.secret_key = '123456'
@@ -70,8 +70,8 @@ def perfil():
 @app.route('/carrinho')
 @login_required
 def carrinho():
-    client_id = session['client_id']
-    itens_carrinho = buscar_itens_carrinho(cliente_id)
+    client_id = session['cliente_id']
+    itens_carrinho = buscar_itens_carrinho(client_id)
     
     total = sum(item['subtotal'] for item in itens_carrinho)
 

@@ -57,6 +57,47 @@ def buscar_cliente_por_id(id):
         }
     return None
 
+def buscar_itens_carrinho(cliente_id):
+    """
+    Busca itens do carrinho adaptado para a tabela 'carrinho_compras'.
+    Faz o JOIN pelo 'nome_produto' pois a tabela não tem 'produto_id'.
+    """
+    conn = get_db_connection()
+    
+    # ADAPTAÇÃO CRÍTICA:
+    # 1. Tabela mudou de 'ItensCarrinho' para 'carrinho_compras'
+    # 2. JOIN mudou de 'id' para 'nome' (cc.nome_produto = p.nome)
+    itens = conn.execute(
+        """
+        SELECT 
+            p.id AS produto_id, 
+            p.nome AS nome_produto, 
+            p.preco, 
+            cc.quantidade, 
+            (p.preco * cc.quantidade) AS subtotal,
+            p.imagem_url
+        FROM carrinho_compras cc
+        JOIN produtos p ON cc.nome_produto = p.nome
+        WHERE cc.cliente_id = ?
+        """,
+        (cliente_id,)
+    ).fetchall()
+    
+    conn.close()
+    
+    itens_formatados = []
+    
+    for item in itens:
+        item_dict = dict(item)
+        
+        # Garante que tenha uma imagem válida para exibir
+        if not item_dict.get('imagem_url'):
+            item_dict['imagem_url'] = DEFAULT_IMAGE_URL 
+        
+        itens_formatados.append(item_dict)
+        
+    return itens_formatados
+
 def buscar_produtos_em_destaque():
     """
     Busca um número limitado de produtos do banco de dados para a página inicial.
