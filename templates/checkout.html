@@ -1,0 +1,22 @@
+<h1>Checkout</h1>
+
+<table border="1">
+    <tr>
+        <th>Produto</th>
+        <th>Qtd</th>
+        <th>Subtotal</th>
+    </tr>
+    {% for item in itens %}
+    <tr>
+        <td>{{ item.produto.nome }}</td>
+        <td>{{ item.qtd }}</td>
+        <td>R$ {{ item.subtotal }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<p><strong>Total: R$ {{ total }}</strong></p>
+
+<form method="post">
+    <button type="submit">Confirmar Pagamento</button>
+</form>

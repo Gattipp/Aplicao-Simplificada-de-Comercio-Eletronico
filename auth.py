@@ -57,6 +57,24 @@ def buscar_cliente_por_id(id):
         }
     return None
 
+def buscar_produtos_em_destaque():
+    """
+    Busca um número limitado de produtos do banco de dados para a página inicial.
+    """
+    conn = get_db_connection() # Reutilize ou crie sua função de conexão
+    produtos = conn.execute(
+        """
+        SELECT 
+            id, nome, preco, descricao, estoque, imagem_url
+        FROM Produtos
+        """
+    ).fetchall()
+    
+    conn.close()
+    
+    # Converte os objetos Row em dicionários simples para fácil uso no Flask
+    return [dict(produto) for produto in produtos]
+
 def init_db():
     db_path = 'loja_online.db'
     script_path = 'script_ddl_sqlite.sql'
