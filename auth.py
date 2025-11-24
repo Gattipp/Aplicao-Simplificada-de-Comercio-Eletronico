@@ -75,6 +75,31 @@ def buscar_produtos_em_destaque():
     # Converte os objetos Row em dicionários simples para fácil uso no Flask
     return [dict(produto) for produto in produtos]
 
+# auth.py
+
+# ... (Funções existentes) ...
+
+def buscar_produto_por_id(produto_id):
+    """Busca um único produto pelo ID para a página de detalhes."""
+    conn = get_db_connection()
+    produto = conn.execute(
+        """
+        SELECT 
+            id, nome, preco, descricao, estoque, imagem_url
+        FROM produtos 
+        WHERE id = ?
+        """, 
+        (produto_id,)
+    ).fetchone()
+    conn.close()
+
+    if produto:
+        # Retorna o objeto Row (que se comporta como dicionário)
+        return dict(produto) 
+    return None
+
+# ... (Resto das funções) ...
+
 def init_db():
     db_path = 'loja_online.db'
     script_path = 'script_ddl_sqlite.sql'

@@ -1,4 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
+from auth import (
+    criar_cliente, autenticar_cliente, buscar_cliente_por_id, 
+    get_db_connection, buscar_produtos_em_destaque, init_db, bcrypt,
+    buscar_produto_por_id 
+)
 from functools import wraps
 from auth import criar_cliente, autenticar_cliente, buscar_cliente_por_id, get_db_connection, buscar_produtos_em_destaque,init_db, bcrypt
 
@@ -66,6 +71,18 @@ def login():
 def perfil():
     cliente = buscar_cliente_por_id(session['cliente_id'])
     return render_template('perfil.html', cliente=cliente)
+
+
+@app.route('/produto/<int:produto_id>')
+def detalhes_produto(produto_id):
+    produto = buscar_produto_por_id(produto_id)
+
+    if produto is None:
+        flash("Produto não encontrado.", "error")
+        return redirect(url_for('index'))
+
+    return render_template('detalhes_produto.html', produto=produto)
+
 
 @app.route('/carrinho')
 @login_required
