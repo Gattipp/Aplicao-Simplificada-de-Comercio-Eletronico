@@ -9,6 +9,7 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+
 def criar_cliente(nome, email, senha, telefone):
     conn = get_db_connection()
     senha_hash = bcrypt.generate_password_hash(senha).decode('utf-8')
@@ -57,28 +58,28 @@ def buscar_cliente_por_id(id):
     return None
 
 def init_db():
+    db_path = 'loja_online.db'
+    script_path = 'script_ddl_sqlite.sql'
+
+    # cria as tabelas se o banco estiver vazio
     conn = get_db_connection()
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS clientes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nome TEXT NOT NULL,
-            email TEXT UNIQUE NOT NULL,
-            senha_hash TEXT NOT NULL,
-            telefone TEXT,
-            data_cadastro DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
+
+    if os.path.exists(script_path):
+        with open(script_path, 'r', encoding='utf-8') as f:
+            sql_script = f.read()
+        conn.executescript(sql_script)
+        print("Tabelas criadas/validadas via script SQL.")
     
-    #TESTE
+    # cria um usuário de teste
     try:
         senha_hash = bcrypt.generate_password_hash('654321').decode('utf-8')
         conn.execute(
             'INSERT OR IGNORE INTO clientes (nome, email, senha_hash, telefone) VALUES (?, ?, ?, ?)',
             ('Cliente Teste', 'teste@email.com', senha_hash, '(31) 99999-9999')
         )
-        print("CLIENTE TESTE CRIADO: teste@email.com / 654321")
+        print("Cliente teste criado!")
     except:
         pass
-    
+
     conn.commit()
     conn.close()
