@@ -35,7 +35,7 @@
             {% endif %}
         {% endwith %}
 
-        <h2>🛒 Seu Carrinho de Compras</h2>
+        <h2>Seu Carrinho de Compras</h2>
     
         {% if itens %}
             <table class="table table-hover mt-4">
@@ -56,7 +56,6 @@
                         </td>
                         <td>R$ {{ "%.2f"|format(item.produto.preco) }}</td>
                         
-                        <!-- Formulário de Atualização de Quantidade SEM botão de submit -->
                         <td>
                             <form id="update-form-{{ item.produto.id }}" action="{{ url_for('atualizar_quantidade', produto_id=item.produto.id) }}" method="POST">
                                 <input type="number" 
@@ -67,7 +66,6 @@
                                        class="form-control form-control-sm item-quantity-input" 
                                        data-product-id="{{ item.produto.id }}"
                                        style="width: 70px;">
-                                <!-- O campo de input 'type=number' é a única coisa necessária -->
                             </form>
                         </td>
                         
@@ -87,7 +85,6 @@
                 <h4>Total do Carrinho: R$ {{ "%.2f"|format(total) }}</h4>
                 
                 <div class="mt-3 d-flex justify-content-end">
-                    <!-- BOTÃO CONTINUAR COMPRANDO -->
                     <a href="{{ url_for('index') }}" class="btn btn-outline-primary btn-lg me-2">
                         ← Continuar Comprando
                     </a>
@@ -97,7 +94,6 @@
                 </div>
             </div>
         {% else %}
-            <!-- CONTEÚDO DO CARRINHO VAZIO -->
             <div class="text-center my-5 p-5 border rounded bg-light shadow-sm">
                 <h3 class="text-danger mb-4">
                     <i class="fas fa-exclamation-circle me-2"></i> Ops! Seu carrinho está vazio!
@@ -113,31 +109,25 @@
 
     </div>
 
-    <!-- SCRIPT PARA ATUALIZAÇÃO AUTOMÁTICA -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             let timeout = null;
             
-            // Adiciona um listener a todos os inputs de quantidade
             document.querySelectorAll('.item-quantity-input').forEach(function(input) {
                 input.addEventListener('change', function() {
                     const formId = `update-form-${this.getAttribute('data-product-id')}`;
                     const form = document.getElementById(formId);
 
-                    // Verifica se a quantidade é válida antes de enviar
                     if (parseInt(this.value) >= 0 && parseInt(this.value) <= parseInt(this.max)) {
                         
-                        // Limpa o timeout anterior, se houver, para evitar envios duplicados
                         if (timeout) {
                             clearTimeout(timeout);
                         }
 
-                        // Define um novo timeout para enviar o formulário após 500ms
                         timeout = setTimeout(function() {
                             form.submit();
-                        }, 500); // 500ms é um bom tempo para dar chance ao usuário de terminar de digitar
+                        }, 500);
                     } else {
-                         // Se o valor for inválido, o navegador deve impedir, mas esta é uma segurança extra
                          alert(`A quantidade deve ser entre 0 e ${this.max}.`);
                     }
                 });
