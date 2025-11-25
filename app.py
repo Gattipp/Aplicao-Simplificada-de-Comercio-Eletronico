@@ -143,7 +143,7 @@ def atualizar_quantidade(produto_id):
         carrinho_session[produto_id_str] = qtd
         flash(f"Quantidade do produto {produto_id} atualizada para {qtd}.", "success")
     else:
-        # Se a quantidade for 0, remove o item
+        #Se for 0, remove o item
         carrinho_session.pop(produto_id_str, None)
         flash("Item removido do carrinho.", "info")
 
@@ -200,4 +200,5 @@ def logout():
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
+
     app.run(port=5000, host='0.0.0.0', debug=True)
