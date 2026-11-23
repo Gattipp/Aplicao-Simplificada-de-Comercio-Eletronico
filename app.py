@@ -1,14 +1,35 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
-from auth import (
-    criar_cliente, autenticar_cliente, buscar_cliente_por_id, 
-    get_db_connection, buscar_produtos_em_destaque, init_db, bcrypt,
-    buscar_produto_por_id, listar_produtos 
-)
+import os
 from functools import wraps
 
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from auth import (
+    criar_cliente, autenticar_cliente, buscar_cliente_por_id,
+    get_db_connection, buscar_produtos_em_destaque, init_db, bcrypt,
+    buscar_produto_por_id, listar_produtos, criar_pedido, listar_pedidos_do_cliente,
+    EstoqueInsuficiente, ProdutoNaoEncontrado,
+)
+from api import api
+
 app = Flask(__name__)
-app.secret_key = '123456'
+# Em produção, defina SECRET_KEY no ambiente (ex.: na instância EC2)
+app.secret_key = os.environ.get('SECRET_KEY', 'dev-troque-esta-chave')
 bcrypt.init_app(app)
+app.register_blueprint(api)
+
+
+@app.errorhandler(404)
+def pagina_nao_encontrada(e):
+    # Rotas da API respondem em JSON; o site mantém a página padrão
+    if request.path.startswith('/api/'):
+        return jsonify({'erro': 'Recurso não encontrado.'}), 404
+    return e
+
+
+@app.errorhandler(405)
+def metodo_nao_permitido(e):
+    if request.path.startswith('/api/'):
+        return jsonify({'erro': 'Método não permitido para este recurso.'}), 405
+    return e
 
 def get_carrinho():
     if "carrinho" not in session:
@@ -71,7 +92,8 @@ def login():
 @login_required
 def perfil():
     cliente = buscar_cliente_por_id(session['cliente_id'])
-    return render_template('perfil.html', cliente=cliente)
+    pedidos = listar_pedidos_do_cliente(session['cliente_id'])
+    return render_template('perfil.html', cliente=cliente, pedidos=pedidos)
 
 @app.route('/produto/<int:produto_id>')
 def detalhes_produto(produto_id):
@@ -153,10 +175,6 @@ def atualizar_quantidade(produto_id):
 @app.route('/checkout', methods=['GET', 'POST'])
 @login_required
 def checkout():
-    from auth import (
-        buscar_produto_por_id,
-    )
-
     carrinho_session = get_carrinho()
 
     if not carrinho_session:
@@ -185,6 +203,11 @@ def checkout():
         total += subtotal
 
     if request.method == "POST":
+        try:
+            criar_pedido(session['cliente_id'], carrinho_session)
+        except (EstoqueInsuficiente, ProdutoNaoEncontrado) as e:
+            flash(str(e), "error")
+            return redirect(url_for('carrinho'))
         session["carrinho"] = {}
         session.modified = True
 
@@ -200,5 +223,4 @@ def logout():
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
-
-    app.run(port=5000, host='0.0.0.0', debug=True)
+    app.run(port=5000, host='0.0.0.0', debug=os.environ.get('FLASK_DEBUG') == '1')

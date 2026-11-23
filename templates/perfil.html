@@ -53,6 +53,32 @@
                         <p class="text-muted">Carregando dados...</p>
                         {% endif %}
                         
+                        <h5 class="mt-4">Meus pedidos</h5>
+                        {% if pedidos %}
+                        <table class="table table-sm">
+                            <thead>
+                                <tr><th>Pedido</th><th>Data</th><th>Itens</th><th>Status</th><th class="text-end">Total</th></tr>
+                            </thead>
+                            <tbody>
+                                {% for pedido in pedidos %}
+                                <tr>
+                                    <td>#{{ pedido.id }}</td>
+                                    <td>{{ pedido.data }}</td>
+                                    <td>
+                                        {% for item in pedido.itens %}
+                                            {{ item.quantidade }}x {{ item.nome }}{% if not loop.last %}<br>{% endif %}
+                                        {% endfor %}
+                                    </td>
+                                    <td>{{ pedido.status }}</td>
+                                    <td class="text-end">R$ {{ "%.2f"|format(pedido.total) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <p class="text-muted">Você ainda não fez nenhum pedido.</p>
+                        {% endif %}
+
                         <div class="mt-4">
                             <a href="/carrinho" class="btn btn-primary">Ver Carrinho</a>
                             <a href="/" class="btn btn-outline-secondary">Página Inicial</a>
